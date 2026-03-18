@@ -1,0 +1,23 @@
+{
+  "name": "aiko.logger",
+  "version": "1.0.1",
+  "description": "Aiko Development ekosistemi için gelişmiş, renklendirilmiş ve webhook destekli loglama modülü.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "logger",
+    "log",
+    "aiko",
+    "discord",
+    "webhook",
+    "terminal",
+    "logging"
+  ],
+  "author": "Furki <Aiko Development>",
+  "license": "MIT",
+  "dependencies": {
+    "util": "^0.12.5"
+  }
+}

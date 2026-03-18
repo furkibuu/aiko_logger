@@ -9,6 +9,6 @@ const logger = new Logger({
 logger.info('Sistem başlatılıyor...');
 logger.success('Modüller yüklendi.');
 
-// Bu iki mesaj otomatik olarak Discord kanalına Embed olarak düşecek!
+
 logger.warn('Gecikme süresi 300ms sınırını aştı.');
 logger.error('Veritabanı bağlantısı koptu! Sistem durduruluyor.');

@@ -1,93 +1,90 @@
 # 🪵 aiko.logger
 
-**Aiko Development** ekosistemi için tasarlanmış, hafif, esnek ve sıfır bağımlılıklı (**zero-dependency**) gelişmiş loglama modülü.  
-Özellikle Vue, Express web siteleri ve Discord botlarıyla sorunsuz çalışacak şekilde optimize edilmiştir.
+![npm version](https://img.shields.io/npm/v/aiko.logger) ![npm
+downloads](https://img.shields.io/npm/dw/aiko.logger)
+![license](https://img.shields.io/npm/l/aiko.logger)
+![node](https://img.shields.io/node/v/aiko.logger)
 
----
+------------------------------------------------------------------------
 
-## ✨ Öne Çıkan Özellikler
+# 🇹🇷 Türkçe
 
-- 🎨 **Renkli Terminal Çıktıları**  
-  Hata, uyarı ve bilgi mesajlarını ANSI kodlarıyla kolayca ayırt edin.
+**Aiko Development** ekosistemi için tasarlanmış, hafif, esnek ve sıfır
+bağımlılıklı (**zero-dependency**) gelişmiş loglama modülü.
 
-- 📁 **Otomatik Dosya Kaydı (File Rotation)**  
-  Logları tiplerine göre (ör. `HATA-16-03-2026.log`) günlük olarak arşivler. Disk dolmalarına karşı dayanıklıdır.
+Vue, Express ve Discord botlarıyla uyumludur. Tam **TR/EN dil desteği**
+vardır.
 
-- 🚀 **Discord Webhook Entegrasyonu**  
-  Kritik hataları ve uyarıları Discord sunucunuza şık bir embed mesajı olarak gönderir.
+## ✨ Özellikler
 
-- 🛡️ **Akıllı Formatlama & Sınır Koruması**  
-  Obje, Array ve Error (stack trace) çıktıları otomatik olarak okunabilir hale getirilir.  
-  Discord'un 4096 karakter sınırı güvenli şekilde yönetilir.
-
-- ⚡ **Sıfır Bağımlılık**  
-  `chalk`, `moment` gibi harici paketler içermez. Tamamen Node.js'in dahili modülleriyle yazılmıştır.
-
----
+-   🌐 Otomatik dil algılama\
+-   🎨 6 log seviyesi (info, success, warn, error, debug, fatal)\
+-   📁 Günlük log dosyaları (rotation)\
+-   🚀 Discord webhook desteği\
+-   🛡️ Akıllı formatlama (object, error, stack)\
+-   ⚡ Sıfır bağımlılık
 
 ## 📦 Kurulum
 
-```bash
+``` bash
 npm install aiko.logger
 ```
 
----
+## 🚀 Kullanım
 
-## 🚀 Temel Kullanım
-
-```js
+``` js
 const { Logger } = require('aiko.logger');
 
-// Logger yapılandırma
 const logger = new Logger({
-    saveToFile: true,
-    logFolder: './logs',
-    webhookUrl: 'DISCORD_WEBHOOK_URL_BURAYA'
+  saveToFile: true,
+  webhookUrl: 'WEBHOOK_URL'
 });
 
-// Log örnekleri
-logger.info('Aiko sistemi başarıyla başlatıldı.');
-logger.success('Veritabanı bağlantısı kuruldu.');
-logger.warn('Gecikme süresi yüksek: 250ms');
-logger.error('Kritik bir modül yüklenemedi!');
+logger.info('Sistem başlatıldı');
+logger.error('Hata oluştu');
 ```
 
----
+------------------------------------------------------------------------
 
-## 🧠 Gelişmiş Kullanım
+# 🇬🇧 English
 
-### 1️⃣ Obje / Array Loglama
+A lightweight, flexible and **zero-dependency** logger built for the
+**Aiko Development** ecosystem.
 
-```js
-const userData = { id: 12345, username: "Furki", roles: ["Admin", "Dev"] };
-logger.info(userData);
+Optimized for Vue, Express and Discord bots with full **TR/EN i18n
+support**.
+
+## ✨ Features
+
+-   🌐 Auto language detection\
+-   🎨 6 log levels (info, success, warn, error, debug, fatal)\
+-   📁 Daily log files (rotation)\
+-   🚀 Discord webhook integration\
+-   🛡️ Smart formatting (object, error, stack trace)\
+-   ⚡ Zero dependencies
+
+## 📦 Installation
+
+``` bash
+npm install aiko.logger
 ```
 
-➡️ `[object Object]` yerine veriyi detaylı ve okunabilir şekilde gösterir.
+## 🚀 Usage
 
----
+``` js
+const { Logger } = require('aiko.logger');
 
-### 2️⃣ Hata (Error) Yakalama
+const logger = new Logger({
+  saveToFile: true,
+  webhookUrl: 'WEBHOOK_URL'
+});
 
-```js
-try {
-    throw new Error("API sunucusuna ulaşılamıyor!");
-} catch (err) {
-    logger.error(err);
-}
+logger.info('System started');
+logger.error('Something went wrong');
 ```
 
-➡️ Stack trace dahil tüm detayları hem terminale, hem dosyaya hem de Discord webhook'una gönderir.
+------------------------------------------------------------------------
 
----
+## 📄 License
 
-## 🤝 Topluluk & Destek
-
-Bu modül **Aiko Development** projesinin bir parçasıdır.  
-Sorularınız ve önerileriniz için topluluğa katılabilirsiniz.
-
----
-
-## 📄 Lisans
-
-Bu proje **MIT lisansı** ile açık kaynak olarak paylaşılmıştır.
+MIT License

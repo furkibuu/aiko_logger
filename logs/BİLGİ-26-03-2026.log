@@ -1,7 +1,0 @@
-[26.03.2026 - 17:11:41] [BİLGİ] Aiko sistemi başarıyla başlatıldı.
-[26.03.2026 - 17:11:41] [BİLGİ] {
-  id: '9876543210',
-  username: 'Furki',
-  badges: [ 'Developer', 'Early Supporter' ],
-  isActive: true
-}

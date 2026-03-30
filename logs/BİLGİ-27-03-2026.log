@@ -1,0 +1,7 @@
+[27.03.2026 - 21:08:40] [BİLGİ] Aiko sistemi başarıyla başlatıldı.
+[27.03.2026 - 21:08:40] [BİLGİ] {
+  botName: 'Aiko',
+  ping: 120,
+  status: 'Online',
+  modules: [ 'Logger', 'Database', 'Canvas' ]
+}

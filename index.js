@@ -1,67 +1,34 @@
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
-const colors = {
-    reset: "\x1b[0m",
-    red: "\x1b[31m",
-    green: "\x1b[32m",
-    yellow: "\x1b[33m",
-    blue: "\x1b[34m",
-    magenta: "\x1b[35m",
-    cyan: "\x1b[36m",
-    gray: "\x1b[90m",
-    bgRed: "\x1b[41m", 
-    white: "\x1b[37m"
-};
-
-
-const locales = {
-    tr: {
-        labels: { info: 'BİLGİ', success: 'BAŞARI', warn: 'UYARI', error: 'HATA', debug: 'AYIKLAMA', fatal: 'KRİTİK' },
-        messages: {
-            fileError: 'Log dosyasına yazılamadı',
-            webhookError: 'Webhook gönderilemedi',
-            webhookRejected: 'Webhook reddedildi',
-            logDetail: 'Log Detayı'
-        },
-        dateLocale: 'tr-TR'
-    },
-    en: {
-        labels: { info: 'INFO', success: 'SUCCESS', warn: 'WARN', error: 'ERROR', debug: 'DEBUG', fatal: 'FATAL' },
-        messages: {
-            fileError: 'Failed to write to log file',
-            webhookError: 'Failed to send webhook',
-            webhookRejected: 'Webhook request rejected',
-            logDetail: 'Log Details'
-        },
-        dateLocale: 'en-US'
-    }
-};
+const { colors } = require('./colors/color');
+const { locales } = require('./locales/locales');
 
 class Logger {
     constructor(options = {}) {
-        this.saveToFile = options.saveToFile || false;
-        this.logFolder = options.logFolder || './logs';
-        this.webhookUrl = options.webhookUrl || null;
-        let detectedLang = 'en'; 
-
-        if (options.language) {
-            detectedLang = options.language === 'tr' ? 'tr' : 'en';
-        } else {
-            try {
-                const systemLocale = Intl.DateTimeFormat().resolvedOptions().locale || '';
-                const envLang = process.env.LANG || process.env.LC_ALL || '';
-
-                if (systemLocale.toLowerCase().startsWith('tr') || envLang.toLowerCase().startsWith('tr')) {
-                    detectedLang = 'tr';
-                }
-            } catch (err) {
-
-            }
-        }
-
-        this.lang = detectedLang; 
+        this.config = {
+            saveToFile: options.saveToFile || false,
+            logFolder: options.logFolder || './logs',
+            webhookUrl: options.webhookUrl || null
+        };
+    
+        this.lang = this._detectLanguage(options.language);
         this.t = locales[this.lang]; 
+    }
+
+    _detectLanguage(customLang) {
+        if (customLang && locales[customLang]) return customLang;
+
+        try {
+            const systemLocale = Intl.DateTimeFormat().resolvedOptions().locale || '';
+            const envLang = process.env.LANG || process.env.LC_ALL || '';
+
+            if (systemLocale.toLowerCase().startsWith('tr') || envLang.toLowerCase().startsWith('tr')) {
+                return 'tr';
+            }
+        } catch (err) {
+        }
+        return 'en';
     }
 
     _getTimestamp() {
@@ -69,7 +36,6 @@ class Logger {
         const locale = this.t.dateLocale;
         const date = now.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
         const time = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-     
         return `${date} - ${time}`;
     }
 
@@ -79,27 +45,24 @@ class Logger {
     }
 
     _formatMessage(message) {
-        if (message instanceof Error) {
-            return message.stack || message.message;
-        } else if (typeof message === 'object' && message !== null) {
-            return util.inspect(message, { depth: null, colors: false });
-        }
+        if (message instanceof Error) return message.stack || message.message;
+        if (typeof message === 'object' && message !== null) return util.inspect(message, { depth: null, colors: false });
         return String(message);
     }
 
+
     _writeToFile(labelKey, cleanMessage) {
-        if (!this.saveToFile) return;
+        if (!this.config.saveToFile) return;
 
         try {
-            if (!fs.existsSync(this.logFolder)) {
-                fs.mkdirSync(this.logFolder, { recursive: true });
+            if (!fs.existsSync(this.config.logFolder)) {
+                fs.mkdirSync(this.config.logFolder, { recursive: true });
             }
             
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\./g, '-');
+            const dateStr = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\./g, '-');
             const typeLabel = this.t.labels[labelKey];
             const fileName = `${typeLabel}-${dateStr}.log`;
-            const filePath = path.join(this.logFolder, fileName);
+            const filePath = path.join(this.config.logFolder, fileName);
 
             const timestamp = this._getTimestamp();
             const logLine = `[${timestamp}] [${typeLabel}] ${cleanMessage}\n`;
@@ -111,14 +74,11 @@ class Logger {
     }
 
     async _sendToWebhook(labelKey, cleanMessage, embedColor) {
-        if (!this.webhookUrl) return;
+        if (!this.config.webhookUrl) return;
 
-        let safeMessage = cleanMessage;
-        if (safeMessage.length > 4000) {
-            safeMessage = safeMessage.substring(0, 3995) + '...';
-        }
-
+        const safeMessage = cleanMessage.length > 4000 ? cleanMessage.substring(0, 3995) + '...' : cleanMessage;
         const typeLabel = this.t.labels[labelKey];
+
         const embed = {
             title: `🚨 ${typeLabel}`,
             description: `**${this.t.messages.logDetail}:**\n\`\`\`${safeMessage}\`\`\``,
@@ -127,13 +87,10 @@ class Logger {
         };
 
         try {
-            const response = await fetch(this.webhookUrl, {
+            const response = await fetch(this.config.webhookUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: 'aiko.logger',
-                    embeds: [embed]
-                })
+                body: JSON.stringify({ username: 'aiko.logger', embeds: [embed] })
             });
 
             if (!response.ok) {
@@ -150,38 +107,24 @@ class Logger {
         
         const timestamp = this._getTimestamp();
         const typeLabel = this.t.labels[labelKey];
+        
         const typeDisplay = terminalColor === colors.bgRed 
             ? `${colors.bgRed}${colors.white}[${typeLabel}]${colors.reset}` 
             : `${terminalColor}[${typeLabel}]${colors.reset}`;
 
         console.log(`${colors.gray}[${timestamp}]${colors.reset} ${typeDisplay} ${formattedMessage}`);
+        
         this._writeToFile(labelKey, cleanMessage);
-        if (sendToWebhook) {
-            this._sendToWebhook(labelKey, cleanMessage, embedColor);
-        }
+        if (sendToWebhook) this._sendToWebhook(labelKey, cleanMessage, embedColor);
     }
 
- 
-    info(message) { 
-        this._print('info', colors.cyan, message, 3447003, false); 
-    }    
- 
-    success(message) { 
-        this._print('success', colors.green, message, 3066993, false); 
-    } 
-
-    debug(message) { 
-        this._print('debug', colors.magenta, message, null, false); 
-    }
-    warn(message) { 
-        this._print('warn', colors.yellow, message, 16776960, true); 
-    }   
-    error(message) { 
-        this._print('error', colors.red, message, 15158332, true); 
-    } 
-    fatal(message) { 
-        this._print('fatal', colors.bgRed, message, 16711680, true); 
-    }
+    info(message)   { this._print('info', colors.cyan, message, 3447003, false); }
+    success(message){ this._print('success', colors.green, message, 3066993, false); }
+    debug(message)  { this._print('debug', colors.magenta, message, null, false); }
+    warn(message)   { this._print('warn', colors.yellow, message, 16776960, true); }
+    error(message)  { this._print('error', colors.red, message, 15158332, true); }
+    fatal(message)  { this._print('fatal', colors.bgRed, message, 16711680, true); }
+    logerr(message) { this._print('logerr', colors.dark_blue, message, 15158332, true); }
 }
 
 module.exports = { Logger };

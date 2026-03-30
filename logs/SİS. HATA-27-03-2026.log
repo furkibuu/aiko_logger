@@ -1,6 +1,6 @@
-[26.03.2026 - 17:11:41] [HATA] Kullanıcı modülü yüklenirken beklenmeyen bir hata oluştu!
-[26.03.2026 - 17:11:41] [HATA] Error: Discord API Rate Limit aşıldı!
-    at Object.<anonymous> (C:\Users\furki\OneDrive\Desktop\aiko_logger\test.js:58:11)
+[27.03.2026 - 21:08:40] [SİS. HATA] Sistemsel altyapı hatası: Veritabanı senkronizasyonu koptu!
+[27.03.2026 - 21:08:40] [SİS. HATA] Error: API bağlantısı zaman aşımına uğradı (Timeout)!
+    at Object.<anonymous> (C:\Users\furki\OneDrive\Desktop\aiko_logger\test.js:28:11)
     at Module._compile (node:internal/modules/cjs/loader:1761:14)
     at Object..js (node:internal/modules/cjs/loader:1893:10)
     at Module.load (node:internal/modules/cjs/loader:1481:32)

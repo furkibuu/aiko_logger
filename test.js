@@ -2,7 +2,7 @@ const { Logger } = require('./index');
 const logger = new Logger({
     saveToFile: true,
     logFolder: './logs',
-    // webhookUrl: 'BURAYA_KENDI_WEBHOOK_URLNI_YAZABILIRSIN'
+    // webhookUrl: 'false'
 });
 
 console.log("==== 1. STANDART LOG SEVİYELERİ ====");

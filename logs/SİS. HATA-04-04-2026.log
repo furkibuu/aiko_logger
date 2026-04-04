@@ -1,0 +1,5 @@
+[04.04.2026 - 11:27:54] [SİS. HATA] Sistemsel altyapı hatası: Veritabanı senkronizasyonu koptu!
+[04.04.2026 - 11:27:54] [SİS. HATA] Error: Discord API Rate Limit aşıldı (Timeout)!
+    at Timeout._onTimeout (C:\Users\furki\OneDrive\Desktop\aiko_logger\test.js:59:15)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)

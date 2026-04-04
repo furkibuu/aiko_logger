@@ -13,7 +13,9 @@ const locales = {
             fileError: 'Log dosyasına yazılamadı',
             webhookError: 'Webhook gönderilemedi',
             webhookRejected: 'Webhook reddedildi',
-            logDetail: 'Log Detayı'
+            logDetail: 'Log Detayı',
+            cleanupSuccess: 'Eski log dosyası temizlendi',
+            cleanupError: 'Log temizlik hatası'
         },
         dateLocale: 'tr-TR'
     },
@@ -31,7 +33,9 @@ const locales = {
             fileError: 'Failed to write to log file',
             webhookError: 'Failed to send webhook',
             webhookRejected: 'Webhook request rejected',
-            logDetail: 'Log Details'
+            logDetail: 'Log Details',
+            cleanupSuccess: 'Old log file cleaned up',
+            cleanupError: 'Log cleanup error'
         },
         dateLocale: 'en-US'
     }

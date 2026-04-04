@@ -1,6 +1,6 @@
 {
 "name": "aiko.logger",
-"version": "1.0.3",
+"version": "1.0.4",
 "description": "Lightweight, zero-dependency, colorful logger with Discord webhook support for Node.js (TR/EN i18n)",
 "main": "index.js",
 "type": "commonjs",

@@ -1,6 +1,8 @@
 const fs = require('fs');
+const fsp = require('fs').promises; 
 const path = require('path');
 const util = require('util');
+
 const { colors } = require('./colors/color');
 const { locales } = require('./locales/locales');
 
@@ -9,39 +11,37 @@ class Logger {
         this.config = {
             saveToFile: options.saveToFile || false,
             logFolder: options.logFolder || './logs',
-            webhookUrl: options.webhookUrl || null
+            webhookUrl: options.webhookUrl || null,
+            keepLogsFor: options.keepLogsFor || 0, 
+            autoCleanup: options.autoCleanup || false
         };
-    
+
         this.lang = this._detectLanguage(options.language);
-        this.t = locales[this.lang]; 
+        this.t = locales[this.lang];
+        
+        if (this.config.autoCleanup && this.config.keepLogsFor > 0) {
+            this._cleanupLogs();
+        }
     }
 
     _detectLanguage(customLang) {
         if (customLang && locales[customLang]) return customLang;
-
         try {
             const systemLocale = Intl.DateTimeFormat().resolvedOptions().locale || '';
             const envLang = process.env.LANG || process.env.LC_ALL || '';
-
-            if (systemLocale.toLowerCase().startsWith('tr') || envLang.toLowerCase().startsWith('tr')) {
-                return 'tr';
-            }
-        } catch (err) {
-        }
+            if (systemLocale.toLowerCase().startsWith('tr') || envLang.toLowerCase().startsWith('tr')) return 'tr';
+        } catch (err) {}
         return 'en';
     }
 
     _getTimestamp() {
         const now = new Date();
         const locale = this.t.dateLocale;
-        const date = now.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
-        const time = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        return `${date} - ${time}`;
+        return `${now.toLocaleDateString(locale)} - ${now.toLocaleTimeString(locale)}`;
     }
 
     _stripColors(str) {
-        if (typeof str !== 'string') return str;
-        return str.replace(/\x1b\[[0-9;]*m/g, '');
+        return typeof str === 'string' ? str.replace(/\x1b\[[0-9;]*m/g, '') : str;
     }
 
     _formatMessage(message) {
@@ -50,32 +50,51 @@ class Logger {
         return String(message);
     }
 
-
-    _writeToFile(labelKey, cleanMessage) {
+    async _writeToFile(labelKey, cleanMessage) {
         if (!this.config.saveToFile) return;
 
         try {
             if (!fs.existsSync(this.config.logFolder)) {
-                fs.mkdirSync(this.config.logFolder, { recursive: true });
+                await fsp.mkdir(this.config.logFolder, { recursive: true });
             }
             
-            const dateStr = new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\./g, '-');
+            const dateStr = new Date().toLocaleDateString('tr-TR').replace(/\./g, '-');
             const typeLabel = this.t.labels[labelKey];
-            const fileName = `${typeLabel}-${dateStr}.log`;
-            const filePath = path.join(this.config.logFolder, fileName);
+            const filePath = path.join(this.config.logFolder, `${typeLabel}-${dateStr}.log`);
 
-            const timestamp = this._getTimestamp();
-            const logLine = `[${timestamp}] [${typeLabel}] ${cleanMessage}\n`;
+            const logLine = `[${this._getTimestamp()}] [${typeLabel}] ${cleanMessage}\n`;
 
-            fs.appendFileSync(filePath, logLine, 'utf8');
+            await fsp.appendFile(filePath, logLine, 'utf8');
         } catch (err) {
-            console.log(`${colors.red}[LOGGER SYSTEM ERROR]${colors.reset} ${this.t.messages.fileError}: ${err.message}`);
+            console.log(`${colors.red}[LOGGER ERROR]${colors.reset} ${this.t.messages.fileError}: ${err.message}`);
+        }
+    }
+
+    async _cleanupLogs() {
+        try {
+            if (!fs.existsSync(this.config.logFolder)) return;
+
+            const files = await fsp.readdir(this.config.logFolder);
+            const now = Date.now();
+            const msInDay = 24 * 60 * 60 * 1000;
+
+            for (const file of files) {
+                const filePath = path.join(this.config.logFolder, file);
+                const stats = await fsp.stat(filePath);
+                const ageInDays = (now - stats.mtimeMs) / msInDay;
+
+                if (ageInDays > this.config.keepLogsFor) {
+                    await fsp.unlink(filePath);
+                    console.log(`${colors.gray}[LOGGER]${colors.reset} ${colors.yellow}${this.t.messages.cleanupSuccess}: ${file}${colors.reset}`);
+                }
+            }
+        } catch (err) {
+            console.log(`${colors.red}[CLEANUP ERROR]${colors.reset} ${this.t.messages.cleanupError}: ${err.message}`);
         }
     }
 
     async _sendToWebhook(labelKey, cleanMessage, embedColor) {
         if (!this.config.webhookUrl) return;
-
         const safeMessage = cleanMessage.length > 4000 ? cleanMessage.substring(0, 3995) + '...' : cleanMessage;
         const typeLabel = this.t.labels[labelKey];
 
@@ -92,27 +111,19 @@ class Logger {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: 'aiko.logger', embeds: [embed] })
             });
-
-            if (!response.ok) {
-                console.log(`${colors.red}[LOGGER SYSTEM ERROR]${colors.reset} ${this.t.messages.webhookRejected} (Status: ${response.status})`);
-            }
-        } catch (err) {
-            console.log(`${colors.red}[LOGGER SYSTEM ERROR]${colors.reset} ${this.t.messages.webhookError}: ${err.message}`);
-        }
+        } catch (err) {}
     }
 
-    _print(labelKey, terminalColor, rawMessage, embedColor, sendToWebhook = false) {
+    async _print(labelKey, terminalColor, rawMessage, embedColor, sendToWebhook = false) {
         const formattedMessage = this._formatMessage(rawMessage);
         const cleanMessage = this._stripColors(formattedMessage);
         
-        const timestamp = this._getTimestamp();
         const typeLabel = this.t.labels[labelKey];
-        
         const typeDisplay = terminalColor === colors.bgRed 
             ? `${colors.bgRed}${colors.white}[${typeLabel}]${colors.reset}` 
             : `${terminalColor}[${typeLabel}]${colors.reset}`;
 
-        console.log(`${colors.gray}[${timestamp}]${colors.reset} ${typeDisplay} ${formattedMessage}`);
+        console.log(`${colors.gray}[${this._getTimestamp()}]${colors.reset} ${typeDisplay} ${formattedMessage}`);
         
         this._writeToFile(labelKey, cleanMessage);
         if (sendToWebhook) this._sendToWebhook(labelKey, cleanMessage, embedColor);

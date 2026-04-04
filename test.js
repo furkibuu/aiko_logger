@@ -17,10 +17,8 @@ console.log("⏳ Test ortamı hazırlandı. Eski log dosyası simüle edildi...\
 
 const logger = new Logger({
     saveToFile: true,
-    logFolder: logDir,
-    keepLogsFor: 3,       
-    autoCleanup: true,  
-    // webhookUrl: 'YOUR_DISCORD_WEBHOOK_URL', 
+    logFolder: './logs',
+    // webhookUrl: 'false'
 });
 
 
@@ -33,22 +31,15 @@ setTimeout(() => {
     logger.error('Kullanıcı modülü yüklenirken beklenmeyen bir hata oluştu!');
     logger.fatal('Sunucu çöküşü engellendi: Asenkron kurtarma devrede!');
 
-    console.log("\n==== 2. ÖZEL LACİVERT LOG (LOGERR) ====");
-    logger.logerr('Sistemsel altyapı hatası: Veritabanı senkronizasyonu koptu!');
-
-    console.log("\n==== 3. GELİŞMİŞ VERİ TİPLERİ TESTİ ====");
-    const testObject = {
-        botName: "Anju",
-        ping: 42,
-        status: "Online",
-        modules: ["Logger", "Auto-Cleanup", "Asenkron Yazma"]
-    };
-    logger.info(testObject);
-    try {
-        throw new Error("Discord API Rate Limit aşıldı (Timeout)!");
-    } catch (err) {
-        logger.logerr(err); 
-    }
-
-    console.log("\n✅ Test tamamlandı! 'logs' klasörüne bakarsan sadece bugünün loglarını göreceksin.");
-}, 100);
+const testObject = {
+    botName: "Aiko",
+    ping: 120,
+    status: "Online",
+    modules: ["Logger", "Database", "Canvas"]
+};
+logger.info(testObject);
+try {
+    throw new Error("API bağlantısı zaman aşımına uğradı (Timeout)!");
+} catch (err) {
+    logger.logerr(err); 
+}

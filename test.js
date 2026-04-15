@@ -43,3 +43,4 @@ try {
 } catch (err) {
     logger.logerr(err); 
 }
+});

@@ -1,89 +1,68 @@
 # 🪵 aiko.logger
 
-![npm version](https://img.shields.io/npm/v/aiko.logger?color=36C5F0&style=for-the-badge)
-![npm downloads](https://img.shields.io/npm/dt/aiko.logger?color=8A2BE2&style=for-the-badge)
-![license](https://img.shields.io/npm/l/aiko.logger?color=44CC11&style=for-the-badge)
-![node](https://img.shields.io/node/v/aiko.logger?color=339933&style=for-the-badge)
+> ⚡ Lightweight, high-performance, zero-dependency logger for modern
+> Node.js applications
 
----
+------------------------------------------------------------------------
 
-# 🇹🇷 Türkçe
+![npm
+version](https://img.shields.io/npm/v/aiko.logger?style=for-the-badge)
+![downloads](https://img.shields.io/npm/dt/aiko.logger?style=for-the-badge)
+![license](https://img.shields.io/npm/l/aiko.logger?style=for-the-badge)
 
-**Aiko Development** ekosistemi için tasarlanmış, hafif, esnek ve sıfır bağımlılıklı (**zero-dependency**) gelişmiş loglama modülü.
+------------------------------------------------------------------------
 
-Vue, Express web siteleri ve Discord botlarıyla kusursuz çalışması için optimize edilmiştir. Tam **TR/EN dil desteğine** sahiptir. Yeni asenkron motoru ile sisteminizi asla yavaşlatmaz!
+## 🚀 Overview
 
-## ✨ Öne Çıkan Özellikler
+**aiko.logger** is a fast, minimal and flexible logging library designed
+for: - Discord bots 🤖 - APIs & backend services 🌐 - CLI tools 🖥️
 
-- 🌐 **Otomatik Dil Algılama:** İşletim sisteminizin diline (TR/EN) otomatik adapte olur.
-- 🎨 **7 Log Seviyesi:** `info`, `success`, `warn`, `error`, `debug`, `fatal` ve özel lacivert `logerr` seviyesi.
-- ⚡ **Asenkron Dosya İşlemleri:** `fs.promises` kullanır. Log yazarken ana projenizi bloklamaz (Non-blocking).
-- 🧹 **Otomatik Temizlik (Auto-Cleanup):** Belirlediğiniz günden eski log dosyalarını otomatik bularak siler, disk dostudur.
-- 📁 **Günlük Arşivleme (Rotation):** Logları tiplerine göre gün gün ayırarak saklar.
-- 🚀 **Discord Webhook Entegrasyonu:** Kritik hataları Discord sunucunuza şık bir Embed olarak anında iletir.
-- 🛡️ **Akıllı Formatlama:** Obje, Array ve Error (stack trace) çıktılarını otomatik olarak okunabilir hale getirir.
-- 💎 **Sıfır Bağımlılık:** `chalk` veya `moment` içermez. Sadece yerleşik Node.js modülleri!
+Built with performance in mind, it uses **non-blocking async I/O** and
+has **zero external dependencies**.
 
-## 📦 Kurulum
-
-```bash
-npm install aiko.logger
-```
-
-## 🚀 Kullanım
-
-```javascript
-const { Logger } = require('aiko.logger');
-
-// Logger'ı yapılandırın
-const logger = new Logger({
-  saveToFile: true,
-  logFolder: './logs',
-  keepLogsFor: 7,
-  autoCleanup: true,
-  webhookUrl: 'WEBHOOK_URL_BURAYA'
-});
-
-// Standart Kullanım
-logger.info('Aiko sistemi başarıyla başlatıldı.');
-logger.success('Veritabanına bağlanıldı.');
-logger.debug('Önbellek temizlendi.');
-
-// Uyarı ve Hatalar
-logger.warn('Gecikme süresi yüksek!');
-logger.error('Kullanıcı modülü yüklenemedi.');
-logger.fatal('Sistem Çöküşü: Bellek sızıntısı!');
-logger.logerr('Özel altyapı hatası!');
-```
-
----
-
-# 🇬🇧 English
-
-A lightweight, flexible and **zero-dependency** advanced logger built for the **Aiko Development** ecosystem.
-
-Optimized for Vue, Express, and Discord bots with full **TR/EN i18n support**. Powered by a new asynchronous engine to ensure it never slows down your system!
+------------------------------------------------------------------------
 
 ## ✨ Features
 
-- 🌐 **Auto Language Detection:** Automatically adapts to your OS language (EN/TR).
-- 🎨 **7 Log Levels:** `info`, `success`, `warn`, `error`, `debug`, `fatal`, and custom dark-blue `logerr`.
-- ⚡ **Asynchronous File I/O:** Uses `fs.promises`. Non-blocking operations for maximum performance.
-- 🧹 **Auto-Cleanup:** Automatically deletes old log files.
-- 📁 **Daily Rotation:** Archives logs day by day.
-- 🚀 **Discord Webhook Integration:** Sends critical errors to Discord.
-- 🛡️ **Smart Formatting:** Parses Objects, Arrays, and Errors into readable output.
-- 💎 **Zero Dependencies:** Pure built-in Node.js modules!
+-   ⚡ Non-blocking async architecture (`fs.promises`)
+-   🎨 7 log levels (`info`, `success`, `warn`, `error`, `debug`,
+    `fatal`, `logerr`)
+-   📁 Daily log rotation
+-   🧹 Auto cleanup system
+-   🚀 Discord webhook integration
+-   🛡️ Smart formatting (Object, Array, Error)
+-   🌐 Auto language detection (TR/EN)
+-   💎 Zero dependencies
+
+------------------------------------------------------------------------
+
+## 🖥️ Terminal Preview
+
+``` bash
+[INFO]    System started successfully
+[SUCCESS] Database connected
+[DEBUG]   Cache cleared
+
+[WARN]    High latency detected
+[ERROR]   Failed to load user module
+[FATAL]   System crash detected
+
+[LOGERR]  Custom infrastructure error
+```
+
+------------------------------------------------------------------------
 
 ## 📦 Installation
 
-```bash
+``` bash
 npm install aiko.logger
 ```
 
-## 🚀 Usage
+------------------------------------------------------------------------
 
-```javascript
+## ⚡ Quick Start
+
+``` js
 const { Logger } = require('aiko.logger');
 
 const logger = new Logger({
@@ -94,17 +73,41 @@ const logger = new Logger({
   webhookUrl: 'YOUR_WEBHOOK_URL'
 });
 
-logger.info('Aiko system started successfully.');
-logger.success('Database connected.');
-logger.debug('Cache cleared.');
-
-logger.warn('High latency detected!');
-logger.error('Failed to load user module.');
-logger.fatal('System Crash: Memory leak!');
-logger.logerr('Custom infrastructure error!');
+logger.info('System started');
+logger.success('Database connected');
+logger.warn('Latency detected');
+logger.error('Something went wrong');
+logger.fatal('System crash');
 ```
 
----
+------------------------------------------------------------------------
+
+## ⚙️ Configuration
+
+  Option        Description
+  ------------- ---------------------
+  saveToFile    Enable file logging
+  logFolder     Log directory
+  keepLogsFor   Retention in days
+  autoCleanup   Delete old logs
+  webhookUrl    Discord webhook
+
+------------------------------------------------------------------------
+
+## 📌 Use Cases
+
+-   Discord bots
+-   Express / API servers
+-   Backend services
+-   CLI tools
+
+------------------------------------------------------------------------
+
+## ⭐ Support
+
+If you like this project, consider giving it a star ⭐
+
+------------------------------------------------------------------------
 
 ## 📄 License
 

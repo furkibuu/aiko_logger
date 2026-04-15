@@ -2,7 +2,6 @@ const fs = require('fs');
 const fsp = require('fs').promises; 
 const path = require('path');
 const util = require('util');
-
 const { colors } = require('./colors/color');
 const { locales } = require('./locales/locales');
 

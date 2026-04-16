@@ -1,3 +1,4 @@
 logs/
 logs-global/
 test.js
+benchmark.js

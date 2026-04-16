@@ -1,35 +1,49 @@
 {
-"name": "aiko.logger",
-"version": "1.0.5",
-"description": "Lightweight, zero-dependency, colorful logger with Discord webhook support for Node.js (TR/EN i18n)",
-"main": "index.js",
-"type": "commonjs",
-"scripts": {
-"test": "node test.js"
+  "name": "aiko.logger",
+  "version": "1.0.6",
+  "description": "High-performance, zero-dependency logger for Node.js with JSON logging, custom levels, transports, and Discord webhook support",
+  "main": "index.js",
+  "type": "commonjs",
+
+  "scripts": {
+    "test": "node test.js"
+  },
+
+  "keywords": [
+    "logger",
+    "logging",
+    "nodejs",
+    "log",
+    "debug",
+    "error",
+    "console",
+    "terminal",
+    "json-logging",
+    "structured-logging",
+    "custom-logger",
+    "lightweight",
+    "zero-dependency",
+    "discord",
+    "webhook",
+    "transport",
+    "aiko"
+  ],
+
+  "author": "Furkan (Aiko Development)",
+  "license": "MIT",
+
+  "homepage": "https://github.com/furkibuu/aiko_logger",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/furkibuu/aiko_logger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/furkibuu/aiko_logger/issues"
+  },
+"exports": {
+  ".": "./index.js"
 },
-"keywords": [
-"logger",
-"logging",
-"nodejs",
-"discord",
-"webhook",
-"console",
-"terminal",
-"debug",
-"error",
-"aiko"
-],
-"author": "Furki (Aiko Development)",
-"license": "MIT",
-"homepage": "https://github.com/furkibuu/aiko_logger",
-"repository": {
-"type": "git",
-"url": "https://github.com/furkibuu/aiko_logger.git"
-},
-"bugs": {
-"url": "https://github.com/furkibuu/aiko_logger/issues"
-},
-"engines": {
-"node": ">=16"
-}
+  "engines": {
+    "node": ">=16"
+  }
 }

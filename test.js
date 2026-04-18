@@ -1,8 +1,25 @@
-// test.js
 const { Logger } = require('./index');
+const fs = require('fs');
+const path = require('path');
 
 // ---------------------------------------------------------
-// SENARYO 1: JSON Formatı ve Dosya Kaydı
+// SENARYO 1: Standart Metin Loglama ve Otomatik Temizlik
+// ---------------------------------------------------------
+const logger = new Logger({
+    saveToFile: true,
+    logFolder: './logs/text_logs',
+    keepLogsFor: 1, // 1 günden eski logları temizle
+    autoCleanup: true
+});
+
+console.log("==== 1. STANDART METİN LOG TESTİ ====");
+logger.info('Aiko modüler sistem başarıyla yüklendi.');
+logger.success('Helpers.js üzerinden formatlama yapıldı.');
+logger.debug('Geliştirici modu aktif.'); // Mor renkli
+
+
+// ---------------------------------------------------------
+// SENARYO 2: JSON Formatı Testi
 // ---------------------------------------------------------
 const jsonLogger = new Logger({
     saveToFile: true,
@@ -10,40 +27,36 @@ const jsonLogger = new Logger({
     logFolder: './logs/json_logs'
 });
 
-console.log("==== 1. JSON FORMAT TESTİ ====");
-jsonLogger.info("Bu mesaj dosyaya JSON olarak kaydedilecek.");
-jsonLogger.success({ status: "success", code: 200, message: "API Yanıtı" });
+console.log("\n==== 2. JSON FORMAT TESTİ ====");
+jsonLogger.info("Bu mesaj dosyaya JSON olarak yazılacak.");
+jsonLogger.success({ database: "connected", ping: "14ms", status: "stable" });
 
 
 // ---------------------------------------------------------
-// SENARYO 2: Log Seviyesi Filtreleme (minLevel)
+// SENARYO 3: MinLevel (Filtreleme) Testi
 // ---------------------------------------------------------
 const filteredLogger = new Logger({
-    minLevel: 'error'
+    minLevel: 'warn' // Sadece 'warn' ve üzerini (warn, error, fatal, logerr) basar
 });
 
-console.log("\n==== 2. SEVİYE FİLTRELEME TESTİ (Min: ERROR) ====");
-filteredLogger.info("Bu mesaj GÖRÜNMEYECEK (info < error)");
-filteredLogger.warn("Bu mesaj GÖRÜNMEYECEK (warn < error)");
-filteredLogger.error("Bu mesaj GÖRÜNECEK!");
-filteredLogger.fatal("Bu mesaj da GÖRÜNECEK!");
+console.log("\n==== 3. SEVİYE FİLTRELEME TESTİ (Min: WARN) ====");
+filteredLogger.info("BU GÖRÜNMEYECEK");   // Seviye 2 (Filtrelendi)
+filteredLogger.warn("BU GÖRÜNECEK!");      // Seviye 4 (Geçti)
+filteredLogger.error("Kritik hata uyarısı!"); // Seviye 5 (Geçti)
 
 
 // ---------------------------------------------------------
-// SENARYO 3: Eklenti (Custom Transport) Sistemi
+// SENARYO 4: Eklenti (Custom Transport) Sistemi
 // ---------------------------------------------------------
 const transportLogger = new Logger();
 
+// Kendi eklentimizi ekleyelim (Logları terminale sarı renkle ekstradan basar)
 transportLogger.addTransport((data) => {
-    console.log(`\x1b[33m[EKLEMTI TETİKLENDİ]\x1b[0m Gelen Seviye: ${data.level} | Mesaj: ${data.message}`);
+    console.log(`\x1b[33m[EKLEMTI TETİKLENDİ]\x1b[0m Mesaj: ${data.message} | Zaman: ${data.timestamp}`);
 });
 
-console.log("\n==== 3. CUSTOM TRANSPORT TESTİ ====");
-transportLogger.info("Eklenti sistemi bu mesajı yakalayacak.");
+console.log("\n==== 4. CUSTOM TRANSPORT TESTİ ====");
+transportLogger.logerr("Lacivert log hatası ve eklenti testi!");
 
 
-// ---------------------------------------------------------
-// SENARYO 4: Özel Lacivert Log (logerr)
-// ---------------------------------------------------------
-console.log("\n==== 4. ÖZEL LACİVERT LOG TESTİ ====");
-transportLogger.logerr("Kritik veritabanı senkronizasyon hatası!");
+console.log("\n✅ Testler tamamlandı. './logs' klasörünü kontrol edebilirsin.");

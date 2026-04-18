@@ -1,6 +1,6 @@
 {
   "name": "aiko.logger",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "High-performance, zero-dependency logger for Node.js with JSON logging, custom levels, transports, and Discord webhook support",
   "main": "index.js",
   "type": "commonjs",

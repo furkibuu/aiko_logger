@@ -1,9 +1,9 @@
 const fs = require('fs');
 const fsp = require('fs').promises; 
 const path = require('path');
-const util = require('util');
 const { colors } = require('./colors/color');
 const { locales } = require('./locales/locales');
+const { detectLanguage, getTimestamp, stripColors, formatMessage } = require('./utils/helpers');
 
 const LEVEL_HIERARCHY = { debug: 1, info: 2, success: 3, warn: 4, error: 5, logerr: 5, fatal: 6 };
 
@@ -19,7 +19,7 @@ class Logger {
             format: options.format || 'text'       
         };
 
-        this.lang = this._detectLanguage(options.language);
+        this.lang = detectLanguage(options.language, locales);
         this.t = locales[this.lang];
     
         this.transports = [];
@@ -36,36 +36,11 @@ class Logger {
             console.log(`${colors.red}[LOGGER ERROR]${colors.reset} Transport must be a function.`);
         }
     }
+
     _shouldLog(currentLevel) {
         const minLevelWeight = LEVEL_HIERARCHY[this.config.minLevel] || 1;
         const currentLevelWeight = LEVEL_HIERARCHY[currentLevel] || 1;
         return currentLevelWeight >= minLevelWeight;
-    }
-
-    _detectLanguage(customLang) {
-        if (customLang && locales[customLang]) return customLang;
-        try {
-            const systemLocale = Intl.DateTimeFormat().resolvedOptions().locale || '';
-            const envLang = process.env.LANG || process.env.LC_ALL || '';
-            if (systemLocale.toLowerCase().startsWith('tr') || envLang.toLowerCase().startsWith('tr')) return 'tr';
-        } catch (err) {}
-        return 'en';
-    }
-
-    _getTimestamp() {
-        const now = new Date();
-        const locale = this.t.dateLocale;
-        return `${now.toLocaleDateString(locale)} - ${now.toLocaleTimeString(locale)}`;
-    }
-
-    _stripColors(str) {
-        return typeof str === 'string' ? str.replace(/\x1b\[[0-9;]*m/g, '') : str;
-    }
-
-    _formatMessage(message) {
-        if (message instanceof Error) return message.stack || message.message;
-        if (typeof message === 'object' && message !== null) return util.inspect(message, { depth: null, colors: false });
-        return String(message);
     }
 
     async _writeToFile(labelKey, cleanMessage) {
@@ -89,7 +64,8 @@ class Logger {
                     message: cleanMessage
                 }) + '\n';
             } else {
-                logLine = `[${this._getTimestamp()}] [${typeLabel}] ${cleanMessage}\n`;
+
+                logLine = `[${getTimestamp(this.t.dateLocale)}] [${typeLabel}] ${cleanMessage}\n`;
             }
 
             await fsp.appendFile(filePath, logLine, 'utf8');
@@ -145,15 +121,15 @@ class Logger {
     async _print(labelKey, terminalColor, rawMessage, embedColor, sendToWebhook = false) {
         if (!this._shouldLog(labelKey)) return;
 
-        const formattedMessage = this._formatMessage(rawMessage);
-        const cleanMessage = this._stripColors(formattedMessage);
+        const formattedMessage = formatMessage(rawMessage);
+        const cleanMessage = stripColors(formattedMessage);
         
         const typeLabel = this.t.labels[labelKey];
         const typeDisplay = terminalColor === colors.bgRed 
             ? `${colors.bgRed}${colors.white}[${typeLabel}]${colors.reset}` 
             : `${terminalColor}[${typeLabel}]${colors.reset}`;
 
-        console.log(`${colors.gray}[${this._getTimestamp()}]${colors.reset} ${typeDisplay} ${formattedMessage}`);
+        console.log(`${colors.gray}[${getTimestamp(this.t.dateLocale)}]${colors.reset} ${typeDisplay} ${formattedMessage}`);
         
         this._writeToFile(labelKey, cleanMessage);
         if (sendToWebhook) this._sendToWebhook(labelKey, cleanMessage, embedColor);
@@ -168,7 +144,7 @@ class Logger {
             this.transports.forEach(transport => transport(transportData));
         }
     }
-
+    
     info(message)   { this._print('info', colors.cyan, message, 3447003, false); }
     success(message){ this._print('success', colors.green, message, 3066993, false); }
     debug(message)  { this._print('debug', colors.magenta, message, null, false); }

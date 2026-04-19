@@ -1,6 +1,7 @@
 const fs = require('fs');
 const fsp = require('fs').promises; 
 const path = require('path');
+
 const { colors } = require('./colors/color');
 const { locales } = require('./locales/locales');
 const { detectLanguage, getTimestamp, stripColors, formatMessage } = require('./utils/helpers');
@@ -16,12 +17,12 @@ class Logger {
             keepLogsFor: options.keepLogsFor || 0, 
             autoCleanup: options.autoCleanup || false,
             minLevel: options.minLevel || 'debug', 
-            format: options.format || 'text'       
+            format: options.format || 'text',
+            prefix: options.prefix || null 
         };
 
         this.lang = detectLanguage(options.language, locales);
         this.t = locales[this.lang];
-    
         this.transports = [];
 
         if (this.config.autoCleanup && this.config.keepLogsFor > 0) {
@@ -58,14 +59,17 @@ class Logger {
 
             let logLine;
             if (this.config.format === 'json') {
-                logLine = JSON.stringify({
+                const jsonPayload = {
                     timestamp: new Date().toISOString(),
                     level: typeLabel,
                     message: cleanMessage
-                }) + '\n';
-            } else {
+                };
+                if (this.config.prefix) jsonPayload.prefix = this.config.prefix;
+                logLine = JSON.stringify(jsonPayload) + '\n';
 
-                logLine = `[${getTimestamp(this.t.dateLocale)}] [${typeLabel}] ${cleanMessage}\n`;
+            } else {
+                const prefixStr = this.config.prefix ? `[${this.config.prefix}] ` : '';
+                logLine = `[${getTimestamp(this.t.dateLocale)}] ${prefixStr}[${typeLabel}] ${cleanMessage}\n`;
             }
 
             await fsp.appendFile(filePath, logLine, 'utf8');
@@ -101,9 +105,10 @@ class Logger {
         if (!this.config.webhookUrl) return;
         const safeMessage = cleanMessage.length > 4000 ? cleanMessage.substring(0, 3995) + '...' : cleanMessage;
         const typeLabel = this.t.labels[labelKey];
+        const titleStr = this.config.prefix ? `🚨 [${this.config.prefix}] ${typeLabel}` : `🚨 ${typeLabel}`;
 
         const embed = {
-            title: `🚨 ${typeLabel}`,
+            title: titleStr,
             description: `**${this.t.messages.logDetail}:**\n\`\`\`${safeMessage}\`\`\``,
             color: embedColor,
             timestamp: new Date().toISOString()
@@ -123,13 +128,14 @@ class Logger {
 
         const formattedMessage = formatMessage(rawMessage);
         const cleanMessage = stripColors(formattedMessage);
-        
         const typeLabel = this.t.labels[labelKey];
+        
         const typeDisplay = terminalColor === colors.bgRed 
             ? `${colors.bgRed}${colors.white}[${typeLabel}]${colors.reset}` 
             : `${terminalColor}[${typeLabel}]${colors.reset}`;
-
-        console.log(`${colors.gray}[${getTimestamp(this.t.dateLocale)}]${colors.reset} ${typeDisplay} ${formattedMessage}`);
+        const prefixStr = this.config.prefix ? `${colors.gray}[${this.config.prefix}]${colors.reset} ` : '';
+        
+        console.log(`${colors.gray}[${getTimestamp(this.t.dateLocale)}]${colors.reset} ${prefixStr}${typeDisplay} ${formattedMessage}`);
         
         this._writeToFile(labelKey, cleanMessage);
         if (sendToWebhook) this._sendToWebhook(labelKey, cleanMessage, embedColor);
@@ -139,7 +145,8 @@ class Logger {
                 level: labelKey,
                 label: typeLabel,
                 message: cleanMessage,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                prefix: this.config.prefix 
             };
             this.transports.forEach(transport => transport(transportData));
         }

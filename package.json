@@ -1,12 +1,30 @@
 {
   "name": "aiko.logger",
-  "version": "1.0.7",
-  "description": "High-performance, zero-dependency logger for Node.js with JSON logging, custom levels, transports, and Discord webhook support",
+  "version": "1.0.8",
+  "description": "High-performance Node.js logger with JSON logging, custom levels, transports, prefix support and zero dependencies",
   "main": "index.js",
   "type": "commonjs",
 
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.js",
+      "default": "./index.js"
+    }
+  },
+
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+
+  "types": "./index.d.ts",
+  "sideEffects": false,
+
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "lint": "eslint ."
   },
 
   "keywords": [
@@ -23,9 +41,13 @@
     "custom-logger",
     "lightweight",
     "zero-dependency",
+    "fast-logger",
+    "pino-alternative",
+    "winston-alternative",
     "discord",
     "webhook",
     "transport",
+    "prefix",
     "aiko"
   ],
 
@@ -35,14 +57,12 @@
   "homepage": "https://github.com/furkibuu/aiko_logger",
   "repository": {
     "type": "git",
-    "url": "https://github.com/furkibuu/aiko_logger.git"
+    "url": "git+https://github.com/furkibuu/aiko_logger.git"
   },
   "bugs": {
     "url": "https://github.com/furkibuu/aiko_logger/issues"
   },
-"exports": {
-  ".": "./index.js"
-},
+
   "engines": {
     "node": ">=16"
   }

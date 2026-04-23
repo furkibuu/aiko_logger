@@ -1,8 +1,6 @@
 const fs = require('fs');
-const fsp = require('fs').promises; 
 const path = require('path');
-
-const { colors } = require('./colors/color');
+const { colors } = require('./colors/colors');
 const { locales } = require('./locales/locales');
 const { detectLanguage, getTimestamp, stripColors, formatMessage } = require('./utils/helpers');
 
@@ -24,6 +22,7 @@ class Logger {
         this.lang = detectLanguage(options.language, locales);
         this.t = locales[this.lang];
         this.transports = [];
+        this.streams = {};
 
         if (this.config.autoCleanup && this.config.keepLogsFor > 0) {
             this._cleanupLogs();
@@ -44,55 +43,77 @@ class Logger {
         return currentLevelWeight >= minLevelWeight;
     }
 
-    async _writeToFile(labelKey, cleanMessage) {
+    _getStream(typeLabel) {
+        if (!this.config.saveToFile) return null;
+
+        if (!fs.existsSync(this.config.logFolder)) {
+            fs.mkdirSync(this.config.logFolder, { recursive: true });
+        }
+
+        const dateStr = new Date().toLocaleDateString('tr-TR').replace(/\./g, '-');
+        const fileExt = this.config.format === 'json' ? 'json' : 'log';
+        const fileName = `${typeLabel}-${dateStr}.${fileExt}`;
+        const filePath = path.join(this.config.logFolder, fileName);
+
+        if (this.streams[fileName]) {
+            return this.streams[fileName];
+        }
+
+        const stream = fs.createWriteStream(filePath, { flags: 'a', encoding: 'utf8' });
+   
+        stream.on('error', (err) => {
+            console.log(`${colors.red}[LOGGER STREAM ERROR]${colors.reset} ${this.t.messages.fileError}: ${err.message}`);
+        });
+
+        this.streams[fileName] = stream;
+        return stream;
+    }
+
+    _writeToFile(labelKey, cleanMessage) {
         if (!this.config.saveToFile) return;
 
-        try {
-            if (!fs.existsSync(this.config.logFolder)) {
-                await fsp.mkdir(this.config.logFolder, { recursive: true });
-            }
-            
-            const dateStr = new Date().toLocaleDateString('tr-TR').replace(/\./g, '-');
-            const typeLabel = this.t.labels[labelKey];
-            const fileExt = this.config.format === 'json' ? 'json' : 'log';
-            const filePath = path.join(this.config.logFolder, `${typeLabel}-${dateStr}.${fileExt}`);
+        const typeLabel = this.t.labels[labelKey];
+        const stream = this._getStream(typeLabel);
+        
+        if (!stream) return;
 
-            let logLine;
-            if (this.config.format === 'json') {
-                const jsonPayload = {
-                    timestamp: new Date().toISOString(),
-                    level: typeLabel,
-                    message: cleanMessage
-                };
-                if (this.config.prefix) jsonPayload.prefix = this.config.prefix;
-                logLine = JSON.stringify(jsonPayload) + '\n';
-
-            } else {
-                const prefixStr = this.config.prefix ? `[${this.config.prefix}] ` : '';
-                logLine = `[${getTimestamp(this.t.dateLocale)}] ${prefixStr}[${typeLabel}] ${cleanMessage}\n`;
-            }
-
-            await fsp.appendFile(filePath, logLine, 'utf8');
-        } catch (err) {
-            console.log(`${colors.red}[LOGGER ERROR]${colors.reset} ${this.t.messages.fileError}: ${err.message}`);
+        let logLine;
+        if (this.config.format === 'json') {
+            const jsonPayload = {
+                timestamp: new Date().toISOString(),
+                level: typeLabel,
+                message: cleanMessage
+            };
+            if (this.config.prefix) jsonPayload.prefix = this.config.prefix;
+            logLine = JSON.stringify(jsonPayload) + '\n';
+        } else {
+            const prefixStr = this.config.prefix ? `[${this.config.prefix}] ` : '';
+            logLine = `[${getTimestamp(this.t.dateLocale)}] ${prefixStr}[${typeLabel}] ${cleanMessage}\n`;
         }
+
+        stream.write(logLine);
     }
 
     async _cleanupLogs() {
         try {
             if (!fs.existsSync(this.config.logFolder)) return;
 
-            const files = await fsp.readdir(this.config.logFolder);
+            const files = await fs.promises.readdir(this.config.logFolder);
             const now = Date.now();
             const msInDay = 24 * 60 * 60 * 1000;
 
             for (const file of files) {
                 const filePath = path.join(this.config.logFolder, file);
-                const stats = await fsp.stat(filePath);
+                const stats = await fs.promises.stat(filePath);
                 const ageInDays = (now - stats.mtimeMs) / msInDay;
 
                 if (ageInDays > this.config.keepLogsFor) {
-                    await fsp.unlink(filePath);
+                    if (this.streams[file]) {
+                        this.streams[file].end();
+                        delete this.streams[file];
+                    }
+                    
+                    await fs.promises.unlink(filePath);
                     console.log(`${colors.gray}[LOGGER]${colors.reset} ${colors.yellow}${this.t.messages.cleanupSuccess}: ${file}${colors.reset}`);
                 }
             }
@@ -123,7 +144,7 @@ class Logger {
         } catch (err) {}
     }
 
-    async _print(labelKey, terminalColor, rawMessage, embedColor, sendToWebhook = false) {
+    _print(labelKey, terminalColor, rawMessage, embedColor, sendToWebhook = false) {
         if (!this._shouldLog(labelKey)) return;
 
         const formattedMessage = formatMessage(rawMessage);
@@ -136,7 +157,7 @@ class Logger {
         const prefixStr = this.config.prefix ? `${colors.gray}[${this.config.prefix}]${colors.reset} ` : '';
         
         console.log(`${colors.gray}[${getTimestamp(this.t.dateLocale)}]${colors.reset} ${prefixStr}${typeDisplay} ${formattedMessage}`);
-        
+
         this._writeToFile(labelKey, cleanMessage);
         if (sendToWebhook) this._sendToWebhook(labelKey, cleanMessage, embedColor);
 
@@ -148,10 +169,19 @@ class Logger {
                 timestamp: new Date().toISOString(),
                 prefix: this.config.prefix 
             };
-            this.transports.forEach(transport => transport(transportData));
+            setImmediate(() => {
+                this.transports.forEach(transport => transport(transportData));
+            });
         }
     }
     
+    close() {
+        for (const fileName in this.streams) {
+            this.streams[fileName].end();
+            delete this.streams[fileName];
+        }
+    }
+
     info(message)   { this._print('info', colors.cyan, message, 3447003, false); }
     success(message){ this._print('success', colors.green, message, 3066993, false); }
     debug(message)  { this._print('debug', colors.magenta, message, null, false); }

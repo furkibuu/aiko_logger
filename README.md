@@ -5,8 +5,7 @@
 
 ------------------------------------------------------------------------
 
-![npm
-version](https://img.shields.io/npm/v/aiko.logger?style=for-the-badge)
+![npmversion](https://img.shields.io/npm/v/aiko.logger?style=for-the-badge)
 ![downloads](https://img.shields.io/npm/dt/aiko.logger?style=for-the-badge)
 ![license](https://img.shields.io/npm/l/aiko.logger?style=for-the-badge)
 ![node](https://img.shields.io/node/v/aiko.logger?style=for-the-badge)

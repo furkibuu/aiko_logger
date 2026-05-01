@@ -1,6 +1,6 @@
 {
   "name": "aiko.logger",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "High-performance Node.js logger with JSON logging, custom levels, transports, prefix support and zero dependencies",
   "main": "index.js",
   "type": "commonjs",

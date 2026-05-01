@@ -139,7 +139,7 @@ const logger = new Logger({
 ------------------------------------------------------------------------
 
 ## ⚙️ Configuration
-
+```js
   Option        Description
   ------------- ---------------------
   saveToFile    Enable file logging
@@ -150,7 +150,7 @@ const logger = new Logger({
   prefix        Label logs
   minLevel      Filter logs
   format        `text` or `json`
-
+```
 ------------------------------------------------------------------------
 
 ## ⚔️ Comparison

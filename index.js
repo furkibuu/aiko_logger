@@ -3,24 +3,29 @@ const path = require('path');
 const { colors } = require('./colors/colors');
 const { locales } = require('./locales/locales');
 const { detectLanguage, getTimestamp, stripColors, formatMessage } = require('./utils/helpers');
+const { validateLevel, validateLanguage } = require('./utils/validators'); 
 
 const LEVEL_HIERARCHY = { debug: 1, info: 2, success: 3, warn: 4, error: 5, logerr: 5, fatal: 6 };
 
 class Logger {
     constructor(options = {}) {
+        const isValidLang = validateLanguage(options.language, locales);
+        const targetLang = isValidLang ? options.language : null;
+        this.lang = detectLanguage(targetLang, locales);
+        this.t = locales[this.lang]; 
+        const isValidLevel = validateLevel(options.minLevel, LEVEL_HIERARCHY, this.t);
+        const safeMinLevel = isValidLevel && options.minLevel ? options.minLevel : 'debug';
         this.config = {
             saveToFile: options.saveToFile || false,
             logFolder: options.logFolder || './logs',
             webhookUrl: options.webhookUrl || null,
             keepLogsFor: options.keepLogsFor || 0, 
             autoCleanup: options.autoCleanup || false,
-            minLevel: options.minLevel || 'debug', 
+            minLevel: safeMinLevel,
             format: options.format || 'text',
             prefix: options.prefix || null 
         };
 
-        this.lang = detectLanguage(options.language, locales);
-        this.t = locales[this.lang];
         this.transports = [];
         this.streams = {};
 

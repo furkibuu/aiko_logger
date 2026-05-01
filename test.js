@@ -1,5 +1,5 @@
 const { Logger } = require('./index');
-const dbLogger = new Logger({ prefix: 'MongoDB' });
+const dbLogger = new Logger({ minLevel: 'zort', language: 'fr' });
 
 dbLogger.info('Bağlantı kuruldu.');
 dbLogger.success('Kullanıcı şeması yüklendi.');

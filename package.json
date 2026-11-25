@@ -1,0 +1,50 @@
+{
+  "name": "aiko.logger",
+  "version": "1.2.0",
+  "description": "Lightweight, zero-dependency Node.js logger with JSON logging, scoped child loggers, transports, Discord webhooks and TR/EN support",
+  "main": "index.js",
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.js",
+      "default": "./index.js"
+    }
+  },
+  "types": "./index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "colors/",
+    "locales/",
+    "utils/",
+    "README.md",
+    "README.tr.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "test": "node --test",
+    "demo": "node examples/demo.js",
+    "benchmark": "node benchmark.js"
+  },
+  "keywords": [
+    "logger", "logging", "nodejs", "log", "debug", "error", "console", "terminal",
+    "json-logging", "structured-logging", "custom-logger", "lightweight",
+    "zero-dependency", "fast-logger", "pino-alternative", "winston-alternative",
+    "discord", "webhook", "transport", "prefix", "child-logger", "aiko"
+  ],
+  "author": "Furkan (Aiko Development)",
+  "license": "MIT",
+  "homepage": "https://github.com/furkibuu/aiko_logger",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/furkibuu/aiko_logger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/furkibuu/aiko_logger/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
